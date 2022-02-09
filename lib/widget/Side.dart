@@ -13,22 +13,6 @@ class Side extends StatelessWidget {
   final int index;
   @override
   Widget build(BuildContext context) {
-    /**if (cube.getlight(index)){
-      return GestureDetector(
-          behavior:HitTestBehavior.opaque,
-        onTap: () {
-          print("pressed");
-
-        },
-        onTapDown: (detail){
-          Provider.of<gameProvider>(context,listen:false).move(cube);
-          print("tapdown");
-        },
-        child: sideContent(number,cube.getlight(index)),
-      );
-    }else{
-      return sideContent(number,cube.getlight(index));
-    }**/
     return sideContent(number,cube.getlight(index));
   }
 }
@@ -38,13 +22,15 @@ Widget sideContent(int number, bool enlight){
     width: cubesize,
     height: cubesize,
     decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.75),
+        gradient: RadialGradient(colors: [Color(0xff000022),Color(0xff000033)]
+
+        ),
         border: Border.all(color: black)
     ),
     child: Center(
       child: Text(
         number.toString(),
-        style: TextStyle(fontSize: 14,color: enlight?Colors.green:Colors.grey),
+        style: TextStyle(fontSize: 24,color: enlight?oncolor:offcolor),
       ),
     ),
   );

@@ -16,6 +16,9 @@ List<Color> cubeColor=[
 
 Color black=Colors.black;
 Color colorless=Colors.transparent;
+Color oncolor=Colors.yellow;
+Color offcolor=Color(0xFF5A541B);
+
 
 bool debug=false;
 printd(String content){

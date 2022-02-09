@@ -11,6 +11,8 @@ import 'OneCube.dart';
 class CubeAssembly extends StatelessWidget {
   CubeAssembly();
 
+  static double d = cubesize / 2;
+
   @override
   Widget build(BuildContext context) {
     gameProvider provider = Provider.of<gameProvider>(context, listen: false);
@@ -36,12 +38,18 @@ class CubeAssembly extends StatelessWidget {
       Vector3 result = YtransformMatrix.transform(
           XtransformMatrix.transform(translateVectors[i].clone()));
       return result.z;
+      /**double x=translateVectors[i].x;
+      double y=translateVectors[i].y;
+      double z=translateVectors[i].z;
+      double X=pi/2*ydelta;
+      double Y=pi/2*xdelta;
+      double result=-x*sin(Y)+cos(Y)*(y*sin(X)+z*cos(x));
+      return result;**/
     }
 
     List<int> numbers = [0];
 
     // arrangeing the cube according to the z index
-
     List<Widget> cubes = [];
 
     Map<int, double> ZpointOfindex = {};
@@ -63,6 +71,43 @@ class CubeAssembly extends StatelessWidget {
       }
     }
 
+    //calculate the face to be show
+    List<Vector3> position = [
+      Vector3(0, d, 0),
+      Vector3(-d, 0, 0),
+      Vector3(0, 0, d),
+      Vector3(d, 0, 0),
+      Vector3(0, -d, 0),
+      Vector3(0, 0, -d),
+    ];
+
+    double findfaceZpoint(int i) {
+      Vector3 result =
+      YtransformMatrix.transform(XtransformMatrix.transform(position[i]));
+      return result.z;
+    }
+
+
+    List<int> facenumbers = [0];
+    Map<int, double> ZpointOffaceindex = {};
+    for (int i = 0; i < 6; i++) {
+      ZpointOffaceindex[i] = findfaceZpoint(i);
+    }
+    for (int i = 1; i < 6; i++) {
+      bool added = false;
+      for (int j = 0; j < facenumbers.length; j++) {
+        if (ZpointOffaceindex[i]! < ZpointOffaceindex[facenumbers[j]]!) {
+          facenumbers.insert(j, i);
+          added = true;
+          break;
+        }
+      }
+      if (!added) {
+        facenumbers.add(i);
+      }
+    }
+
+
     for (int i = 0; i < cubenum; i++) {
       cubes.add(Transform(
         transform: Matrix4.identity()
@@ -70,9 +115,9 @@ class CubeAssembly extends StatelessWidget {
               -translateVectors[numbers[i]].y, -translateVectors[numbers[i]].z),
         alignment: FractionalOffset.center,
         child: OneCube(
-            XtransformMatrix: XtransformMatrix,
-            YtransformMatrix: YtransformMatrix,
-            cube: provider.cubes[numbers[i]]),
+            cube: provider.cubes[numbers[i]],
+          numbers:facenumbers,
+        ),
       ));
     }
 

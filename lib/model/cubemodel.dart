@@ -122,7 +122,7 @@ class cubeAssemblyModel{
 
     //removing one cube from the assembly
     Random random = new Random();
-    int randomnumber=random.nextInt((pow(range,3) as int) -2);
+    int randomnumber=random.nextInt((pow(range,3) as int)-(pow(range-2,3) as int) -2);
     cubeModel cubetoBeRemoved=cubes[randomnumber];
     vacancy=[cubetoBeRemoved.x,cubetoBeRemoved.y,cubetoBeRemoved.z];
     cubes.removeAt(randomnumber);

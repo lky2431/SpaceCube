@@ -12,37 +12,30 @@ import 'Side.dart';
 class OneCube extends StatelessWidget {
   OneCube(
       {
-      required this.XtransformMatrix,
-      required this.YtransformMatrix,
-      required this.cube});
+
+      required this.cube,
+      required this.numbers});
 
 
   final cubeModel cube;
+  final List<int> numbers;
 
+  bool seeid=false;
   static double d = cubesize / 2;
 
-  final Matrix3 XtransformMatrix;
-  final Matrix3 YtransformMatrix;
-  bool seeid=false;
-
-
-  List<Vector3> position = [
-    Vector3(0, d, 0),
-    Vector3(-d, 0, 0),
-    Vector3(0, 0, d),
-    Vector3(d, 0, 0),
-    Vector3(0, -d, 0),
-    Vector3(0, 0, -d),
+  static List<List<dynamic>> facetransformationMatrix=
+  [
+    [-pi/2,0.0,0.0,-d,0.0,FractionalOffset.topCenter],
+    [0.0,pi/2,-d,0.0,0.0,FractionalOffset.centerLeft],
+    [0.0,0.0,0.0,0.0,-d,FractionalOffset.center],
+    [0.0,-pi/2,d,0.0,0.0,FractionalOffset.centerRight],
+    [pi/2,0.0,0.0,d,0.0,FractionalOffset.bottomCenter],
+    [0.0,pi,0.0,0.0,-d,FractionalOffset.center],
   ];
 
-  double findZpoint(int i) {
-    Vector3 result =
-        YtransformMatrix.transform(XtransformMatrix.transform(position[i]));
-    return result.z;
-  }
 
   List<Widget> arrangeFace() {
-    List<Widget> rawfaces = [
+    /**List<Widget> rawfaces = [
       Transform(
         transform: Matrix4.identity()
           ..rotateX(-pi / 2)
@@ -83,37 +76,28 @@ class OneCube extends StatelessWidget {
         alignment: FractionalOffset.center,
         child: Side(number: seeid?cube.id:cube.face(6),cube: cube,index:6),
       ),
-    ];
+    ];**/
 
     List<Widget> faces = [];
-    List<int> numbers = [0];
-    Map<int, double> ZpointOfindex = {};
-    for (int i = 0; i < 6; i++) {
-      ZpointOfindex[i] = findZpoint(i);
+    for (int k=0;k<3;k++){
+      List<dynamic> transformdetail=facetransformationMatrix[numbers[k+3]];
+      faces.add(
+        Transform(
+          transform: Matrix4.identity()
+            ..rotateX(transformdetail[0])
+            ..rotateY(transformdetail[1])
+            ..translate(transformdetail[2], transformdetail[3], transformdetail[4]),
+          alignment: transformdetail[5],
+          child: Side(number: seeid?cube.id:cube.face(numbers[k+3]+1),cube: cube,index:numbers[k+3]+1),
+        ),
+      );
     }
 
-
-    for (int i = 1; i < 6; i++) {
-      bool added = false;
-      for (int j = 0; j < numbers.length; j++) {
-        if (ZpointOfindex[i]! < ZpointOfindex[numbers[j]]!) {
-          numbers.insert(j, i);
-          added = true;
-          break;
-        }
-      }
-      if (!added) {
-        numbers.add(i);
-      }
-    }
-    faces.add(rawfaces[numbers[0]]);
-    faces.add(rawfaces[numbers[1]]);
-    faces.add(rawfaces[numbers[2]]);
-    faces.add(rawfaces[numbers[3]]);
+    /**faces.add(rawfaces[numbers[3]]);
     faces.add(rawfaces[numbers[4]]);
-    faces.add(rawfaces[numbers[5]]);
+    faces.add(rawfaces[numbers[5]]);**/
 
-    return faces;
+    return faces.reversed.toList();
   }
 
   @override
@@ -123,14 +107,7 @@ class OneCube extends StatelessWidget {
         height: cubesize,
         width: cubesize,
         color: black,
-        child: Stack(children: arrangeFace())/**GestureDetector(
-          behavior:HitTestBehavior.translucent,
-          onTap: () {
-
-            Provider.of<gameProvider>(context,listen:false).move(cube);
-          },
-          child: Stack(children: arrangeFace()),
-        )**/,
+        child: Stack(children: arrangeFace()),
       ),
     );
   }

@@ -31,7 +31,7 @@ class Pseudo3dSlider extends StatelessWidget {
                   return GestureDetector(
                     onPanUpdate: (details) => onDragUpdate(details.delta,context),
                     child: Container(
-                      color: Color(0xff2b2b2d),
+                      color: Colors.black,
                       child: CubeAssembly(),
                     ),
                   );
