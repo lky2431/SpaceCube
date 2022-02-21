@@ -1,18 +1,20 @@
 import 'dart:math';
 
-class cubeModel{
+import 'package:flutter/material.dart';
+
+class cubeModel {
   Map<int, int> faces={};
   final int id;
-  int x;
-  int y;
-  int z;
+  double x;
+  double y;
+  double z;
   Map<int, bool> enlighted= {1:false,2:false,3:false,4:false,5:false,6:false};
 
   cubeModel(this.id,this.x,this.y,this.z);
 
 
   //create cubeModel with random number initiate
-  factory cubeModel.init(int id, int x, int y, int z, int randomrange){
+  factory cubeModel.init(int id, double x, double y, double z, int randomrange){
     cubeModel initCube=cubeModel(id, x, y, z);
     Random random = new Random();
     for (int i=1;i<=6;i++){
@@ -29,7 +31,7 @@ class cubeModel{
     return faces[i]!;
   }
 
-  void moveTo(List<int> vacancy){
+  void moveTo(List<double> vacancy){
     x=vacancy[0];
     y=vacancy[1];
     z=vacancy[2];
@@ -56,7 +58,7 @@ class cubeAssemblyModel{
 
   cubeAssemblyModel();
   List<cubeModel> cubes=[];
-  List<int> vacancy=[];
+  List<double> vacancy=[];
   int _range=0;
 
   Map<int, List<int>> groupingMatrix={
@@ -78,7 +80,7 @@ class cubeAssemblyModel{
       for (int y =0;y<range;y++){
         for (int z =0;z<range;z++){
           if (x==0||y==0||z==0||x==range-1||y==range-1||z==range-1){
-            cubeModel c= cubeModel.init(id, x, y, z,range*range);
+            cubeModel c= cubeModel.init(id, x.toDouble(), y.toDouble(), z.toDouble(),range*range);
             cubes.add(c);
             if(y==range-1){
               groupingCache.pushList(1,c);
@@ -112,7 +114,7 @@ class cubeAssemblyModel{
       //sorting the face with factor
       List<int> factor=groupingMatrix[i]!;
       List<cubeModel> cubesinaFace=groupingCache[i]!;
-      cubesinaFace.sort((a,b)=>(a.x*factor[0]+a.y*factor[1]+a.z*factor[2]-(b.x*factor[0]+b.y*factor[1]+b.z*factor[2])));
+      cubesinaFace.sort((a,b)=>(a.x*factor[0]+a.y*factor[1]+a.z*factor[2]-(b.x*factor[0]+b.y*factor[1]+b.z*factor[2])).toInt());
       //assign
 
       for (int j=0; j<cubesinaFace.length;j++){
@@ -129,7 +131,7 @@ class cubeAssemblyModel{
 
 
     //blend the cube
-    for (int i=0;i<range*100;i++){
+    for (int i=0;i<range*1000;i++){
       List<cubeModel> neighbor=[];
 
       for (cubeModel cube in cubes){
@@ -140,9 +142,9 @@ class cubeAssemblyModel{
 
       int randomcube=random.nextInt(neighbor.length-1);
       cubeModel cubetomove=neighbor[randomcube];
-      int x=cubetomove.x;
-      int y=cubetomove.y;
-      int z=cubetomove.z;
+      double x=cubetomove.x;
+      double y=cubetomove.y;
+      double z=cubetomove.z;
 
       cubetomove.moveTo(vacancy);
       vacancy=[x,y,z];
@@ -155,7 +157,7 @@ class cubeAssemblyModel{
 
   }
 
-  bool cubeIsNext(int x, int y, int z){
+  bool cubeIsNext(double x, double y, double z){
     num d= (x-vacancy[0]).abs()+(y-vacancy[1]).abs()+(z-vacancy[2]).abs();
     if (d==1){
       return true;
@@ -163,12 +165,11 @@ class cubeAssemblyModel{
     return false;
   }
 
-  void setVacancy(int x, int y, int z){
+  void setVacancy(double x, double y, double z){
     vacancy=[x,y,z];
   }
 
   void resetEnlight(){
-    print(vacancy);
     for (cubeModel cube in cubes){
       for (int i=1;i<=6;i++){
         cube.enlight(i, false);

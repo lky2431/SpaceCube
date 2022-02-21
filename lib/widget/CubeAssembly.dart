@@ -6,21 +6,22 @@ import 'package:threedslidepuzzle/model/cubemodel.dart';
 import 'package:threedslidepuzzle/model/gameProvider.dart';
 import 'package:vector_math/vector_math_64.dart';
 
+import '../startingPage.dart';
 import 'OneCube.dart';
 
 class CubeAssembly extends StatelessWidget {
   CubeAssembly();
 
-  static double d = cubesize / 2;
 
   @override
   Widget build(BuildContext context) {
     gameProvider provider = Provider.of<gameProvider>(context, listen: false);
+    double cubesize=provider.cubesize;
 
     double xdelta = provider.xdelta;
     double ydelta = provider.ydelta;
     int range = provider.range;
-    num cubenum = pow(range, 3) - pow(range - 2, 3)-1 ;
+    num cubenum = pow(range, 3) - pow(range - 2, 3) - 1;
 
     //list to store the translation vector
     List<Vector3> translateVectors = [];
@@ -38,13 +39,6 @@ class CubeAssembly extends StatelessWidget {
       Vector3 result = YtransformMatrix.transform(
           XtransformMatrix.transform(translateVectors[i].clone()));
       return result.z;
-      /**double x=translateVectors[i].x;
-      double y=translateVectors[i].y;
-      double z=translateVectors[i].z;
-      double X=pi/2*ydelta;
-      double Y=pi/2*xdelta;
-      double result=-x*sin(Y)+cos(Y)*(y*sin(X)+z*cos(x));
-      return result;**/
     }
 
     List<int> numbers = [0];
@@ -73,20 +67,19 @@ class CubeAssembly extends StatelessWidget {
 
     //calculate the face to be show
     List<Vector3> position = [
-      Vector3(0, d, 0),
-      Vector3(-d, 0, 0),
-      Vector3(0, 0, d),
-      Vector3(d, 0, 0),
-      Vector3(0, -d, 0),
-      Vector3(0, 0, -d),
+      Vector3(0, cubesize / 2, 0),
+      Vector3(-cubesize / 2, 0, 0),
+      Vector3(0, 0, cubesize / 2),
+      Vector3(cubesize / 2, 0, 0),
+      Vector3(0, -cubesize / 2, 0),
+      Vector3(0, 0, -cubesize / 2),
     ];
 
     double findfaceZpoint(int i) {
       Vector3 result =
-      YtransformMatrix.transform(XtransformMatrix.transform(position[i]));
+          YtransformMatrix.transform(XtransformMatrix.transform(position[i]));
       return result.z;
     }
-
 
     List<int> facenumbers = [0];
     Map<int, double> ZpointOffaceindex = {};
@@ -107,7 +100,6 @@ class CubeAssembly extends StatelessWidget {
       }
     }
 
-
     for (int i = 0; i < cubenum; i++) {
       cubes.add(Transform(
         transform: Matrix4.identity()
@@ -115,8 +107,9 @@ class CubeAssembly extends StatelessWidget {
               -translateVectors[numbers[i]].y, -translateVectors[numbers[i]].z),
         alignment: FractionalOffset.center,
         child: OneCube(
-            cube: provider.cubes[numbers[i]],
-          numbers:facenumbers,
+          cube: provider.cubes[numbers[i]],
+          numbers: facenumbers,
+          cubesize: cubesize
         ),
       ));
     }
@@ -129,153 +122,150 @@ class CubeAssembly extends StatelessWidget {
         Expanded(
           child: GestureDetector(
             onTapDown: (detail) {
-              print(numbers);
               double positionX = detail.localPosition.dx - width / 2;
               double positionY = detail.localPosition.dy - height / 2;
-              List<int> hitcube=[];
+              List<int> hitcube = [];
               for (int num in numbers) {
                 //if (num==0){
-                  printd("====================================");
+                printd("====================================");
 
-                  List<Vector3> cubecorner = [];
-                  Vector3 v = translateVectors[num]; //vector point to center
-                  for (int i in [-1, 1]) {
-                    for (int j in [-1, 1]) {
-                      for (int k in [-1, 1]) {
-                        cubecorner.add(v.clone()
-                          ..setValues(v.x + i * cubesize / 2,
-                              -v.y + j * cubesize / 2, v.z + k * cubesize / 2));
-                      }
+                List<Vector3> cubecorner = [];
+                Vector3 v = translateVectors[num]; //vector point to center
+                for (int i in [-1, 1]) {
+                  for (int j in [-1, 1]) {
+                    for (int k in [-1, 1]) {
+                      cubecorner.add(v.clone()
+                        ..setValues(v.x + i * cubesize / 2,
+                            -v.y + j * cubesize / 2, v.z + k * cubesize / 2));
                     }
                   }
-                  printd("oricube in beginging ${cubecorner}");
-                  Matrix3 XtransformMatrix2 = Matrix3.rotationX(-pi / 2 * ydelta);
-                  for (Vector3 v in cubecorner) {
-                    YtransformMatrix.transform(XtransformMatrix2.transform(v));
-                  }
-                  printd("cube in beginging ${cubecorner}");
+                }
+                printd("oricube in beginging ${cubecorner}");
+                Matrix3 XtransformMatrix2 = Matrix3.rotationX(-pi / 2 * ydelta);
+                for (Vector3 v in cubecorner) {
+                  YtransformMatrix.transform(XtransformMatrix2.transform(v));
+                }
+                printd("cube in beginging ${cubecorner}");
 
-                  //calculate the center of mass of a cube projection
-                  double totalx = 0;
-                  double totaly = 0;
-                  for (Vector3 v in cubecorner) {
-                    totalx += v.x;
-                    totaly += v.y;
-                  }
-                  double meanx = totalx / 8;
-                  double meany = totaly / 8;
-                  printd("center at ( ${meanx}, ${meany})");
+                //calculate the center of mass of a cube projection
+                double totalx = 0;
+                double totaly = 0;
+                for (Vector3 v in cubecorner) {
+                  totalx += v.x;
+                  totaly += v.y;
+                }
+                double meanx = totalx / 8;
+                double meany = totaly / 8;
+                printd("center at ( ${meanx}, ${meany})");
 
-                  //deduplicate the same point and reduce the size to Vector2
-                  List<Vector3> tempcubecorner = [];
+                //deduplicate the same point and reduce the size to Vector2
+                List<Vector3> tempcubecorner = [];
 
-                  for (Vector3 v in cubecorner) {
-                    bool existed = false;
-                    for (Vector3 tv in tempcubecorner) {
-                      if (v.x.toInt() == tv.x.toInt() && v.y.toInt() == tv.y.toInt()) {
-                        existed = true;
-                      }
-                    }
-                    if (!existed) {
-                      tempcubecorner.add(v);
+                for (Vector3 v in cubecorner) {
+                  bool existed = false;
+                  for (Vector3 tv in tempcubecorner) {
+                    if (v.x.toInt() == tv.x.toInt() &&
+                        v.y.toInt() == tv.y.toInt()) {
+                      existed = true;
                     }
                   }
-                  cubecorner.clear();
-                  cubecorner = tempcubecorner;
-                  printd("cube after deduplicate ${cubecorner}");
+                  if (!existed) {
+                    tempcubecorner.add(v);
+                  }
+                }
+                cubecorner.clear();
+                cubecorner = tempcubecorner;
+                printd("cube after deduplicate ${cubecorner}");
 
-                  //find the two point need to be throw away
-                  cubecorner.sort((a, b) {
-                    double d = (pow(b.x - meanx, 2) + pow(b.y - meany, 2)) -
-                        (pow(a.x - meanx, 2) + pow(a.y - meany, 2)) as double;
-                    return d.toInt();
-                  });
-                  printd("cube after sort ${cubecorner}");
+                //find the two point need to be throw away
+                cubecorner.sort((a, b) {
+                  double d = (pow(b.x - meanx, 2) + pow(b.y - meany, 2)) -
+                      (pow(a.x - meanx, 2) + pow(a.y - meany, 2)) as double;
+                  return d.toInt();
+                });
+                printd("cube after sort ${cubecorner}");
 
-                  /**List<double> distancematrix = [];
+                /**List<double> distancematrix = [];
                       for (int i = 0; i < cubecorner.length; i++) {
                       distancematrix.add((pow(cubecorner[i].x - meanx, 2) +
                       pow(cubecorner[i].y - meany, 2)) as double);
                       }
                       printd("distance are ${distancematrix}");**/
 
-                  if (xdelta == 0 || ydelta == 0) {
-                    while (cubecorner.length > 4) {
-                      cubecorner.removeLast();
-                    }
+                if (xdelta == 0 || ydelta == 0) {
+                  while (cubecorner.length > 4) {
+                    cubecorner.removeLast();
+                  }
+                } else {
+                  while (cubecorner.length > 6) {
+                    cubecorner.removeLast();
+                  }
+                }
+
+                printd("cube after throw away ${cubecorner}");
+
+                //recalculate the center
+                totalx = 0;
+                totaly = 0;
+                for (Vector3 v in cubecorner) {
+                  totalx += v.x;
+                  totaly += v.y;
+                }
+                meanx = totalx / cubecorner.length;
+                meany = totaly / cubecorner.length;
+                printd("center at ( ${meanx}, ${meany})");
+
+                //find the order of the points
+                cubecorner.sort((a, b) {
+                  double adegree = (a.x - meanx) >= 0
+                      ? atan((a.y - meany) / (a.x - meanx))
+                      : atan((a.y - meany) / (a.x - meanx)) + pi;
+                  double bdegree = (b.x - meanx) >= 0
+                      ? atan((b.y - meany) / (b.x - meanx))
+                      : atan((b.y - meany) / (b.x - meanx)) + pi;
+                  return ((adegree - bdegree) * 10000).toInt();
+                });
+
+                printd("cube after arrange the angle ${cubecorner}");
+
+                //find the area of triangle with the center of mass
+                double cgtriarea = 0;
+                //find the area of triangle with the tap position
+                double touchtriarea = 0;
+                for (int i = 0; i < cubecorner.length; i++) {
+                  Vector3 corner1 = cubecorner[i];
+                  Vector3? corner2;
+                  if (i == cubecorner.length - 1) {
+                    corner2 = cubecorner[0];
                   } else {
-                    while (cubecorner.length > 6) {
-                      cubecorner.removeLast();
-                    }
+                    corner2 = cubecorner[i + 1];
                   }
+                  Vector3 vector1 = Vector3(corner1.x, corner2.x, meanx);
+                  Vector3 vector2 = Vector3(corner1.y, corner2.y, meany);
 
-                  printd("cube after throw away ${cubecorner}");
+                  Matrix3 CGtrianglematrix =
+                      Matrix3.columns(vector1, vector2, Vector3.all(1.0));
+                  cgtriarea += (CGtrianglematrix.determinant() / 100).abs();
 
+                  vector1 = Vector3(corner1.x, corner2.x, positionX);
+                  vector2 = Vector3(corner1.y, corner2.y, positionY);
 
-                  //recalculate the center
-                  totalx = 0;
-                  totaly = 0;
-                  for (Vector3 v in cubecorner) {
-                    totalx += v.x;
-                    totaly += v.y;
-                  }
-                  meanx = totalx / cubecorner.length;
-                  meany = totaly / cubecorner.length;
-                  printd("center at ( ${meanx}, ${meany})");
+                  CGtrianglematrix =
+                      Matrix3.columns(vector1, vector2, Vector3.all(1.0));
+                  touchtriarea += (CGtrianglematrix.determinant() / 100).abs();
 
+                  printd(
+                      "cg tri area ${cgtriarea} and touch tri area ${touchtriarea}");
+                }
 
-
-                  //find the order of the points
-                  cubecorner.sort((a, b) {
-                    double adegree = (a.x-meanx) >= 0
-                        ? atan((a.y - meany) / (a.x - meanx))
-                        : atan((a.y - meany) / (a.x - meanx)) + pi;
-                    double bdegree = (b.x-meanx) >= 0
-                        ? atan((b.y - meany) / (b.x - meanx))
-                        : atan((b.y - meany) / (b.x - meanx)) + pi;
-                    return ((adegree - bdegree)*10000).toInt();
-                  });
-
-                  printd("cube after arrange the angle ${cubecorner}");
-
-                  //find the area of triangle with the center of mass
-                  double cgtriarea = 0;
-                  //find the area of triangle with the tap position
-                  double touchtriarea = 0;
-                  for (int i = 0; i < cubecorner.length; i++) {
-                    Vector3 corner1 = cubecorner[i];
-                    Vector3? corner2;
-                    if (i == cubecorner.length - 1) {
-                      corner2 = cubecorner[0];
-                    } else {
-                      corner2 = cubecorner[i + 1];
-                    }
-                    Vector3 vector1 = Vector3(corner1.x, corner2.x, meanx);
-                    Vector3 vector2 = Vector3(corner1.y, corner2.y, meany);
-
-                    Matrix3 CGtrianglematrix =
-                    Matrix3.columns(vector1, vector2, Vector3.all(1.0));
-                    cgtriarea += (CGtrianglematrix.determinant() / 100).abs();
-
-                    vector1 = Vector3(corner1.x, corner2.x, positionX);
-                    vector2 = Vector3(corner1.y, corner2.y, positionY);
-
-                    CGtrianglematrix =
-                        Matrix3.columns(vector1, vector2, Vector3.all(1.0));
-                    touchtriarea += (CGtrianglematrix.determinant() / 100).abs();
-
-                    printd(
-                        "cg tri area ${cgtriarea} and touch tri area ${touchtriarea}");
-                  }
-
-                  //
-                  if (touchtriarea <= cgtriarea+0.5) {
-                    hitcube.add(num);
-                    //print("hit");
-                  }
+                //
+                if (touchtriarea <= cgtriarea + 0.5) {
+                  hitcube.add(num);
+                  //print("hit");
+                }
                 //}
               }
-              print(hitcube);
+
               //find the index of touched cube
               /**int? indexOfCube;
               for (int i in hitcube){
@@ -288,12 +278,18 @@ class CubeAssembly extends StatelessWidget {
               if (indexOfCube!=null){
                 Provider.of<gameProvider>(context,listen:false).move(provider.cubes[numbers[indexOfCube]]);
               }**/
-              if (hitcube.isNotEmpty){
-                Provider.of<gameProvider>(context,listen:false).move(provider.cubes[hitcube[hitcube.length-1]]);
+              if (hitcube.isNotEmpty) {
+                Provider.of<gameProvider>(context, listen: false)
+                    .move(provider.cubes[hitcube[hitcube.length - 1]]);
               }
 
-
-
+              Future.delayed(Duration(milliseconds: 600), () {
+                bool result = Provider.of<gameProvider>(context, listen: false)
+                    .checkwin();
+                if (result) {
+                  _showMyDialog(context);
+                }
+              });
             },
             child: Builder(
               builder: (context) {
@@ -324,12 +320,46 @@ class CubeAssembly extends StatelessWidget {
   }
 }
 
-extension on List{
-  int? indexof(int i){
-    for (int j=0;j<=this.length;j++){
-      if (this[j]==i){
-        return j;
-      }
-    }
-  }
+Future<void> _showMyDialog(BuildContext context) async {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false, // user must tap button!
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(24.0))),
+        backgroundColor: Color(0xff000033),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              "Congrat!",
+              style: TextStyle(color: oncolor, fontSize: 24),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                    primary: oncolor,
+                    side: BorderSide(
+                      color: oncolor,
+                    )),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const StartingPage(),
+                      ));
+                },
+                child: Text(
+                  "Back to main screen",
+                  style: TextStyle(color: oncolor),
+                ))
+          ],
+        ),
+      );
+    },
+  );
 }

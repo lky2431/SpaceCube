@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-const double cubesize=100;
 List<Color> cubeColor=[
   Colors.red,
   Colors.orange,

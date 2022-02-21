@@ -19,8 +19,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '3D puzzle',
+      title: 'Space Cube Puzzle',
       home: StartingPage(),
+      theme: ThemeData(
+        canvasColor: Colors.black
+      ),
     );
   }
 }
